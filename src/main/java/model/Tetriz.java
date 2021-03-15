@@ -5,9 +5,7 @@
  */
 package model;
 
-import java.util.AbstractList;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -19,16 +17,25 @@ public class Tetriz {
 
     private String[][] board1;
     private String[][] board2;
+    private List<Piece> player1queuePieces;
+    private List<Piece> player2queuePieces;
     private final int row = 20;
     private final int col = 10;
     private final List<List<int[][]>> pieceTypes;
     private List<String> colors;
+
+    Piece lastPieceCoordenate1 = null;
+    Piece lastPieceCoordenate2 = null;
+
+    private boolean started = false;
 
     public Tetriz() {
         this.colors = new ArrayList<>();
         this.pieceTypes = new ArrayList<>();
         this.board1 = new String[row][col];
         this.board2 = new String[row][col];
+        this.player1queuePieces = new ArrayList<>();
+        this.player2queuePieces = new ArrayList<>();
         this.startBoard();
         setPieceTypes();
         setColors();
@@ -52,12 +59,111 @@ public class Tetriz {
         return board2;
     }
 
-    public Piece getPiece() {
+    public List<Piece> initialPieces() {
+        if (this.started) {
+            return null;
+        }
         Random r = new Random();
         int aux = r.nextInt(7);
-        System.out.println(aux);
-        Piece p = new Piece(pieceTypes.get(aux), colors.get(aux));
-        return p;
+        this.player1queuePieces.add(new Piece(pieceTypes.get(aux), colors.get(aux)));
+
+        aux = r.nextInt(7);
+
+        this.player1queuePieces.add(new Piece(pieceTypes.get(aux), colors.get(aux)));
+        //Mesma peça para os 2 jogadores
+        this.player2queuePieces.add(player1queuePieces.get(0));
+        this.player2queuePieces.add(player1queuePieces.get(1));
+
+        this.started = true;
+
+        return this.player1queuePieces;
+    }
+
+    public List<Piece> p1NewPiece() {
+        Random r = new Random();
+        int aux = r.nextInt(7);
+        
+        //Remove a primeira peça do player1, pq ja caiu
+        this.player1queuePieces.remove(0);
+
+        //adciona nova peça
+        this.player1queuePieces.add(new Piece(pieceTypes.get(aux), colors.get(aux)));
+        //Mesma peça tbm a fila do player 2 
+        this.player2queuePieces.add(new Piece(pieceTypes.get(aux), colors.get(aux)));
+
+        return this.player1queuePieces;
+    }
+
+    public List<Piece> p2NewPiece() {
+        Random r = new Random();
+        int aux = r.nextInt(7);
+        //Remove a primeira peça do player2, pq ja caiu
+        this.player2queuePieces.remove(0);
+
+        //adciona nova peça
+        this.player2queuePieces.add(new Piece(pieceTypes.get(aux), colors.get(aux)));
+        //Mesma peça tbm a fila do player 1 
+        this.player1queuePieces.add(new Piece(pieceTypes.get(aux), colors.get(aux)));
+
+        return this.player2queuePieces;
+    }
+
+    public void uptadeBoard1(String[][] board) {
+        this.lastPieceCoordenate1 = null;
+        for (int i = 0; i < this.row; i++) {
+            System.arraycopy(board[i], 0, this.board1[i], 0, this.col);
+        }
+    }
+
+    public void uptadeTempBoard1(Piece piece) {
+        if (this.lastPieceCoordenate1 != null) {
+            for (int currentRow = 0; currentRow < this.lastPieceCoordenate1.getActivePiece().length; currentRow++) {
+                for (int currentCol = 0; currentCol < this.lastPieceCoordenate1.getActivePiece().length; currentCol++) {
+                    if (this.lastPieceCoordenate1.getActivePiece()[currentRow][currentCol] != 0) {
+                        this.board1[this.lastPieceCoordenate1.getY() + currentRow][this.lastPieceCoordenate1.getX() + currentCol] = "black";
+                    }
+                }
+            }
+        }
+        
+        this.lastPieceCoordenate1 = piece;
+        
+        for (int currentRow = 0; currentRow < piece.getActivePiece().length; currentRow++) {
+            for (int currentCol = 0; currentCol < piece.getActivePiece().length; currentCol++) {
+                if (piece.getActivePiece()[currentRow][currentCol] != 0) {
+                    this.board1[piece.getY() + currentRow][piece.getX() + currentCol] = piece.getColor();
+                }
+            }
+        }
+    }
+
+    public void uptadeBoard2(String[][] board) {
+        this.lastPieceCoordenate2 = null;
+        for (int i = 0; i < this.row; i++) {
+            System.arraycopy(board[i], 0, this.board2[i], 0, this.col);
+        }
+    }
+
+    public void uptadeTempBoard2(Piece piece) {
+        if (this.lastPieceCoordenate2 != null) {
+            for (int currentRow = 0; currentRow < this.lastPieceCoordenate2.getActivePiece().length; currentRow++) {
+                for (int currentCol = 0; currentCol < this.lastPieceCoordenate2.getActivePiece().length; currentCol++) {
+                    if (this.lastPieceCoordenate2.getActivePiece()[currentRow][currentCol] != 0) {
+                        this.board2[this.lastPieceCoordenate2.getY() + currentRow][this.lastPieceCoordenate2.getX() + currentCol] = "black";
+                    }
+                }
+            }
+        }
+        
+        this.lastPieceCoordenate2 = piece;
+        
+        for (int currentRow = 0; currentRow < piece.getActivePiece().length; currentRow++) {
+            for (int currentCol = 0; currentCol < piece.getActivePiece().length; currentCol++) {
+                if (piece.getActivePiece()[currentRow][currentCol] != 0) {
+                    this.board2[piece.getY() + currentRow][piece.getX() + currentCol] = piece.getColor();
+                }
+            }
+        }
     }
 
     private void setColors() {
@@ -68,6 +174,14 @@ public class Tetriz {
         colors.add("green");
         colors.add("yellow");
         colors.add("red");
+    }
+
+    public List<Piece> getPlayer1queuePieces() {
+        return player1queuePieces;
+    }
+
+    public List<Piece> getPlayer2queuePieces() {
+        return player2queuePieces;
     }
 
     private void setPieceTypes() {
@@ -205,8 +319,7 @@ public class Tetriz {
         {0, 1, 0}
         };
         Z.add(z2);
-        
-        System.out.println(pieceTypes.size());
+
         this.pieceTypes.add(I);
         this.pieceTypes.add(J);
         this.pieceTypes.add(L);
@@ -215,18 +328,4 @@ public class Tetriz {
         this.pieceTypes.add(T);
         this.pieceTypes.add(Z);
     }
-    
-    public static void main(String[] args) {
-        Tetriz t = new Tetriz();
-        
-        String[][] teste = t.getBoard1();
-        
-        for (int i = 0; i < 20; i++) {
-            for (int j = 0; j < 10; j++) {
-                System.out.print(teste[i][j]+" ");
-            }
-            System.out.print("\n \n");
-        }
-    }
-
 }

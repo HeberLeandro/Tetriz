@@ -5,7 +5,6 @@
  */
 package model;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -13,7 +12,7 @@ import java.util.List;
  * @author eletr
  */
 public class Piece {
-    private List<int[][]> type;
+    private List<int[][]> piecePositions;
     private String color;
     private int pieceRotation;
     
@@ -21,22 +20,26 @@ public class Piece {
     
     private int x, y;
 
-    public Piece(List<int[][]> type, String color) {
-        this.type = type;
+    public Piece(List<int[][]> piecePositions, String color) {
+        this.piecePositions = piecePositions;
         this.color = color;
         
         this.pieceRotation = 0;
-        this.activePiece = type.get(pieceRotation);
+        this.activePiece = piecePositions.get(pieceRotation);
         this.x = 3;
         this.y = -2;
     }
 
-    public List<int[][]> getType() {
-        return type;
+    public Piece() {
+        
     }
 
-    public void setType(List<int[][]> type) {
-        this.type = type;
+    public List<int[][]> getPiecePositions() {
+        return piecePositions;
+    }
+
+    public void setType(List<int[][]> piecePositions) {
+        this.piecePositions = piecePositions;
     }
 
     public String getColor() {
